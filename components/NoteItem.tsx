@@ -1,11 +1,65 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 
-const NoteItem = ({ noteitem }) => {
+const NoteItem = (
+    { noteitem, onDeleteNote, onEdit }: {
+        noteitem: { text: string, $id: string },
+        onDeleteNote: (id: string) => void,
+        onEdit: (id: string, text:string) => void
+    }
+) => {
+    const [isEditing, setisEditing] = useState(false);
+    const [editedText, setEditedText] = useState(noteitem.text);
+    const inputRef = useRef(null);
+
+    const handleSave = () => {
+        if (editedText.trim() === '') return;
+
+        onEdit(noteitem.$id, editedText);
+        setisEditing(false);
+    }
+
     return (
         <View style={styles.NoteItem}>
-            <Text > {noteitem.text} </Text>
-        </View>
+            {
+                isEditing ? (
+                    <TextInput
+                        ref={inputRef}
+                        // style={styles.input}
+                        value={editedText}
+                        onChangeText={setEditedText}
+                        autoFocus
+                        onSubmitEditing={handleSave}
+                        returnKeyType='done'
+                    />
+                ) : (
+                    <Text> {noteitem.text} </Text>
+                )
+            }
+
+            <View style={styles.actions}>
+
+                {
+                    isEditing ? (
+                        <TouchableOpacity onPress={() => {
+                            handleSave();
+                            inputRef.current.blur();
+                        }}
+                        >
+                            <Text style={styles.edit}>SaveIcon</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity onPress={() => setisEditing(true)}>
+                            <Text style={styles.edit}>Edit</Text>
+                        </TouchableOpacity>
+                    )
+                }
+
+                <TouchableOpacity onPress={() => onDeleteNote(noteitem.$id)}>
+                    <Text style={styles.deleteText}>X</Text>
+                </TouchableOpacity>
+            </View>
+        </View >
     )
 }
 
@@ -20,4 +74,17 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
     },
+    deleteText: {
+        fontSize: 18,
+        color: 'red',
+        fontWeight: '800'
+    },
+    actions: {
+        flexDirection: 'row'
+    },
+    edit: {
+        fontSize: 18,
+        marginRight: 10,
+        color: 'blue'
+    }
 });

@@ -4,7 +4,6 @@ import NoteList from "../../components/NoteList";
 import AddNoteModal from "../../components/AddNoteModal";
 import noteService from "../../services/noteService";
 
-
 const NotesStaticData = [
     {
         id: "1",
@@ -52,6 +51,8 @@ const Notes = () => {
         setLoading(false);
     };
 
+    // console.log("notes,", notes);
+
     const addNode = async () => {
         if (newNote.trim() === "") return;
 
@@ -69,6 +70,50 @@ const Notes = () => {
         setModalVisible(false);
     };
 
+    const updateNote = async function (id: any, newText: any) {
+        if (!newText.trim()) {
+            Alert.alert('Error', "Note text cannot be empty");
+            return;
+        }
+
+        const response = await noteService.updateNote(id, newText);
+
+        if (response.error) {
+            Alert.alert(response.error);
+            return {
+                error: response.error
+            };
+        } else {
+            setNotes((prevNotes) => prevNotes.map((note) => note.$id === id ? {
+                ...note, text: response.data.text
+            } : note));
+
+        }
+    }
+
+    const onDeleteNote = async (id: string) => {
+        Alert.alert('Delete Note', 'Are you sure you want to delete this note?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const response = await noteService.deleteNote(id);
+                        if (response.error) {
+                            Alert.alert('Error', response.error);
+                        } else {
+                            setNotes(notes.filter((note) => note.$id !== id))
+                        }
+                    }
+                }
+            ]
+        )
+    }
+
     return (
         <>
             <View style={styles.container}>
@@ -78,7 +123,7 @@ const Notes = () => {
                     ) : (
                         <>
                             {error && <Text style={styles.errorText}>{error}</Text>}
-                            <NoteList notes={notes} />
+                            <NoteList notes={notes} onDeleteNote={onDeleteNote} onEdit={updateNote} />
                         </>
                     )
                 }

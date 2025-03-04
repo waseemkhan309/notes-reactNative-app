@@ -18,10 +18,11 @@ const noteService = {
 
         return { data: response };
     },
+
     // Add new Note
-    async addNote(text: string){
-        if(!text){
-            return { error: 'Note text canot be empty'}
+    async addNote(text: string) {
+        if (!text) {
+            return { error: 'Note text canot be empty' }
         }
 
         const data = {
@@ -36,14 +37,39 @@ const noteService = {
             ID.unique()
         );
 
-        if(response?.error){
+        if (response?.error) {
             return {
                 error: response.error
             }
         };
 
-        return { data: response}
+        return { data: response }
+    },
+
+    // update Document
+    async updateNote(id, text: any) {
+        const response = await databaseService.updateDocument(dbId, colId, id,
+            { text }
+        );
+        
+        if (response?.error) {
+            return { error: response.error }
+        }
+
+        return { data: response }
+    },
+
+    // Delete Node
+    async deleteNote(id: string) {
+        const response = await databaseService.deleteDocument(dbId, colId, id);
+
+        if (response?.error) {
+            return { error: true }
+        }
+
+        return { success: true }
     }
+
 }
 
 export default noteService;
